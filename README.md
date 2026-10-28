@@ -28,7 +28,7 @@ assets/video/       (posa-hi els vídeos dels plats)
 
 ## Vídeos d'exemple
 
-La carta no fa servir cap foto: només vídeo. Ara mateix 39 plats tenen un vídeo d'exemple de YouTube (Shorts de tercers), revisats un a un en moviment i sense repetir-ne cap. Són a `window.VIDEOS`, al final de `data/menu.js`. Els plats sense un vídeo prou bo es mostren en negre. Abans de posar la carta en servei s'han de substituir per vídeos propis del restaurant.
+La carta no fa servir cap foto: només vídeo. Ara mateix 45 dels 46 plats tenen un vídeo d'exemple de YouTube (Shorts de tercers), revisats un a un en moviment i sense repetir-ne cap. Són a `window.VIDEOS`, al final de `data/menu.js`. Els plats sense un vídeo prou bo es mostren en negre. Abans de posar la carta en servei s'han de substituir per vídeos propis del restaurant.
 
 Els vídeos de YouTube només es veuen quan la carta està publicada en una web normal (GitHub Pages, per exemple). Si un vídeo no carrega, el plat es queda en negre.
 

@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="ca">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>7vuit7 · La carta</title>
+  <meta name="description" content="La carta viva del 7vuit7 · 787matadepera. Cuina catalana de proximitat, carns a la brasa i arrossos.">
+  <meta name="theme-color" content="#fbfaf7">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="7vuit7">
+  <meta property="og:title" content="7vuit7 · La carta">
+  <meta property="og:description" content="Cuina catalana de proximitat · 787matadepera">
+  <link rel="icon" href="assets/img/icon-512.png">
+  <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="preload" as="font" type="font/woff2" href="assets/fonts/cormorant-garamond-latin-500-normal.woff2" crossorigin>
+  <link rel="preload" as="font" type="font/woff2" href="assets/fonts/raleway-latin-400-normal.woff2" crossorigin>
+  <link rel="stylesheet" href="fonts.css">
+  <link rel="preload" as="image" href="assets/img/logo-ink-d.png">
+  <link rel="preload" as="image" href="assets/img/logo-gold-d.png">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Intro -->
+  <div id="intro" class="intro" aria-hidden="true">
+    <div class="intro__logo">
+      <div class="intro__glow"></div>
+      <img class="intro__gold" src="assets/img/logo-gold-d.png" alt="">
+      <img class="intro__ink" src="assets/img/logo-ink-d.png" alt="">
+    </div>
+    <p class="intro__tag" data-i18n="claim"></p>
+    <p class="intro__skip" data-i18n="tapToSkip"></p>
+    <span class="intro__line"></span>
+  </div>
+
+  <!-- Top bar -->
+  <header class="topbar" id="topbar">
+    <a href="#/" class="topbar__brand" aria-label="7vuit7">
+      <img src="assets/img/logo-dark.png" alt="7vuit7 · 787matadepera">
+    </a>
+    <div class="topbar__actions">
+      <div class="lang" role="group" aria-label="Idioma">
+        <button data-lang="ca">CA</button>
+        <button data-lang="es">ES</button>
+        <span class="lang__pill"></span>
+      </div>
+    </div>
+  </header>
+
+  <main id="view" class="view"></main>
+
+  <!-- Floating selection button -->
+  <button class="fab" id="fab" aria-label="La meva tria">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 7h12l-1 12.5a1.5 1.5 0 0 1-1.5 1.5h-7A1.5 1.5 0 0 1 7 19.5L6 7Z"/><path d="M9 7V5.5a3 3 0 0 1 6 0V7"/></svg>
+    <span class="fab__label" data-i18n="myList"></span>
+    <span class="fab__count" id="fabCount">0</span>
+  </button>
+
+  <!-- Video feed -->
+  <section id="feed" class="feed" aria-hidden="true">
+    <div class="feed__top">
+      <button class="iconbtn" data-close-feed aria-label="Tornar">
+        <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>
+      </button>
+      <div class="feed__cats" id="feedCats"></div>
+      <span class="feed__count" id="feedCount"></span>
+    </div>
+    <div class="feed__progress" id="feedProg"></div>
+    <div class="feed__scroller" id="feedScroller"></div>
+    <div class="feed__hint" id="feedHint">
+      <span class="feed__hint-line"></span>
+      <span data-i18n="swipe"></span>
+    </div>
+  </section>
+
+  <!-- Bottom sheet: my selection -->
+  <div class="scrim" id="scrim"></div>
+  <section class="sheet" id="sheet" aria-hidden="true">
+    <div class="sheet__grab"></div>
+    <header class="sheet__head">
+      <h3 data-i18n="myList"></h3>
+      <button class="textbtn" id="clearList" data-i18n="clear"></button>
+    </header>
+    <div class="sheet__body" id="sheetBody"></div>
+    <footer class="sheet__foot" id="sheetFoot">
+      <div class="sheet__total"><span data-i18n="total"></span><strong id="sheetTotal"></strong></div>
+      <button class="btn btn--gold" id="openWaiter" data-i18n="showWaiter"></button>
+    </footer>
+  </section>
+
+  <!-- Waiter mode -->
+  <section class="waiter" id="waiter" aria-hidden="true">
+    <button class="iconbtn waiter__close" id="closeWaiter" aria-label="Tancar">
+      <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg>
+    </button>
+    <img class="waiter__mark" src="assets/img/mark-d.png" alt="">
+    <h2 data-i18n="waiterHello"></h2>
+    <p class="waiter__hint" data-i18n="waiterHint"></p>
+    <ol class="waiter__list" id="waiterList"></ol>
+  </section>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="data/menu.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

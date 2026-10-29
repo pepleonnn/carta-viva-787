@@ -67,6 +67,10 @@
   };
   (window.MENU || []).forEach(c => {
     const e = EN[c.id];
+    const PE = { amanides: "A crisp, mineral white, such as a Penedès xarel·lo.", classics: "A brut nature cava, dry with fine bubbles.",
+      platets: "A lees-aged white with enough body for the sauce.", carns: "A full-bodied local red: Priorat, Montsant or Pla de Bages.",
+      peixos: "A rounded white Garnacha from Terra Alta.", arrossos: "A dry rosé or a white Garnacha." };
+    if (c.pairing && PE[c.id]) c.pairing.en = PE[c.id];
     if (e) { c.name.en = e.name; c.kicker.en = e.kicker; c.intro.en = e.intro; if (c.note && e.note) c.note.en = e.note; }
     c.dishes.forEach(d => { const x = D[d.id]; if (x) { d.name.en = x[0]; d.desc.en = x[1]; } if (d.unit) d.unit.en = "each"; });
   });

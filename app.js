@@ -146,8 +146,9 @@
     return out.join("");
   }
   // Al·lèrgens: si el plat en té informats, es llisten; si no, s'indica on consultar-los (RD 126/2015).
-  const allergensHTML = d => `<div class="allerg">${ICON.info}<span><b>${esc(t("allergens"))}</b> · ${
+  const allergensHTML = d => `<div class="allerg">${ICON.info}<span><b>${esc(t("allergens"))}</b>${d.allergens && d.allergens.length ? ` <em>(${esc(t("allergensDemo"))})</em>` : ""} · ${
     d.allergens && d.allergens.length ? d.allergens.map(a => esc(L(window.ALLERGENS[a] || { ca: a }))).join(", ") : esc(t("allergenAsk"))}</span></div>`;
+  const pairingHTML = c => c.pairing ? `<div class="pairing"><span>${esc(t("pairing"))}</span>${esc(L(c.pairing))}</div>` : "";
   const originHTML = d => d.origin ? `<div class="origin"><span>${esc(t("product"))}</span>${esc(d.origin)}</div>` : "";
   const priceSub = d => d.unit ? `/ ${esc(L(d.unit))}` : d.perPerson ? esc(t("perPerson")) : "";
   const demoBadge = d => d.media && d.media.demo ? `<span class="demo-badge">${esc(t("demoMedia"))}</span>` : "";
@@ -174,7 +175,6 @@
       <div class="showcase reveal" data-open-feed="0" id="showcase">
         <div class="media">${amb ? `<img class="thumb yt-thumb kb" src="${ytThumb(amb)}" alt="" fetchpriority="high">` : ""}</div>
         <div class="shade"></div>
-        ${amb ? `<span class="demo-badge">${esc(t("demoMedia"))}</span>` : ""}
         <div class="showcase__cap">
           <div><div class="kicker">${esc(t("videoMenuSub"))}</div><h3>${esc(t("videoMenu"))}</h3></div>
           <span class="showcase__play">${ICON.play}</span>
@@ -209,6 +209,7 @@
             <h2 class="block__title">${esc(L(c.name))}</h2>
             <p class="block__intro">${esc(L(c.intro))}</p>
             ${c.note ? `<div class="note">${ICON.info}<span>${esc(L(c.note))}</span></div>` : ""}
+            ${pairingHTML(c)}
           </div>
           <ul class="dishes">
             ${c.dishes.map(d => `
@@ -251,6 +252,7 @@
         </div>
         <p class="allergen reveal">${esc(t("allergenNote"))}</p>
         <p class="allergen">${esc(t("pricesNote"))}</p>
+        <p class="allergen demo-note">${esc(t("demoNote"))}</p>
         <p class="credits">787matadepera · ${SINCE[lang]} ${R.since}</p>
       </div>
     </footer>`;
@@ -314,6 +316,8 @@
       extra = `<div class="pair__lbl">${esc(t("pairWine"))}</div><div class="wines">${g.dishes.map(w => `<div class="wine"><div><b>${esc(L(w.name))}</b><span>${esc(L(w.desc))} · ${money(w.price)}</span></div></div>`).join("")}</div>`;
     } else if (d.sides) {
       extra = `<div class="pair"><div class="pair__txt"><div class="pair__lbl">${esc(t("sides"))}</div><div class="pair__name" style="white-space:normal;font-size:16px">${esc(L(d.cat.note).replace(/^[^:]+:\s*/, ""))}</div></div></div>`;
+    } else if (d.cat.pairing && !d.sides) {
+      extra = `<div class="pair"><div class="pair__txt"><div class="pair__lbl">${esc(t("pairing"))}</div><div class="pair__name" style="white-space:normal;font-size:16px">${esc(L(d.cat.pairing))}</div></div></div>`;
     } else if (d.perPerson && d.cat.note) {
       extra = `<div class="pair"><div class="pair__txt"><div class="pair__lbl">${esc(L(d.cat.kicker))}</div><div class="pair__name" style="white-space:normal;font-size:16px">${esc(L(d.cat.note))}</div></div></div>`;
     }
@@ -321,7 +325,6 @@
     return `<article class="slide" data-i="${i}" data-cat="${d.cat.id}">
       <div class="media">${thumbImg(d, (i % 4) + 1, true)}</div>
       <div class="slide__shade"></div>
-      ${demoBadge(d)}
       <div class="slide__card">
         <div class="slide__k">${esc(L(d.cat.name))}</div>
         <div class="slide__head">

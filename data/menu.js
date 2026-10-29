@@ -3,10 +3,13 @@
  * Font: carta oficial del restaurant (PDF, febrer 2026) i web 787matadepera.cat
  *
  * COM EDITAR
- *  - Preus: camp "price" (número). Es mostren en format català/castellà (15,5 €).
+ *  - Preus: camp "price" (número). Es mostren amb format de restaurant: 15,50 (euros, indicat al peu).
  *  - Vídeo d'un plat: afegeix  media: { type: "video", src: "assets/video/nom.mp4", poster: "assets/img/nom.jpg" }
  *    També accepta  { type: "image", src: "..." }  i  { type: "youtube", id: "XXXXXXXXXXX" }.
  *  - Al·lèrgens: afegeix  allergens: ["gluten","lactics", ...]  (codis a ALLERGENS, a sota).
+ *    Plantilla per omplir amb el restaurant: data/alergens-plantilla.csv
+ *  - Producte d'origen: camp "origin" (només el que diu la carta oficial).
+ *  - Anglès: data/menu-en.js
  *  - Etiquetes: "signature" (plat de la casa), "share" (per compartir), "min2" (mínim 2 persones).
  */
 
@@ -64,10 +67,10 @@ window.MENU = [
       { id: "amanida-tomaquet", price: 15,
         name: { ca: "Amanida de tomàquet", es: "Ensalada de tomate" },
         desc: { ca: "Amb ceba tendra i ventresca de tonyina.", es: "Con cebolla tierna y ventresca de atún." } },
-      { id: "amanida-burrata", price: 15.5,
+      { id: "amanida-burrata", origin: "Olives Kalamata", price: 15.5,
         name: { ca: "Amanida de burrata", es: "Ensalada de burrata" },
         desc: { ca: "Amb pesto, rúcula, tomàquet semisec confitat, olives Kalamata, nous i vinagreta de mel.", es: "Con pesto, rúcula, tomate semiseco confitado, aceitunas Kalamata, nueces y vinagreta de miel." } },
-      { id: "saltat-mongetes", price: 14.5,
+      { id: "saltat-mongetes", origin: "Mongeta del Ganxet · Ceba de Figueres", price: 14.5,
         name: { ca: "Saltat de mongetes del Ganxet", es: "Salteado de judías del Ganxet" },
         desc: { ca: "Amb pebrot verd i vermell, ceba de Figueres, botifarra blanca i pernil cruixent.", es: "Con pimiento verde y rojo, cebolla de Figueres, butifarra blanca y jamón crujiente." } }
     ]
@@ -81,10 +84,10 @@ window.MENU = [
       { id: "braves", price: 9.5, tags: ["signature"], pair: ["pa-tomaquet"],
         name: { ca: "Les braves del 7vuit7", es: "Las bravas del 7vuit7" },
         desc: { ca: "Patates a dues coccions.", es: "Patatas a dos cocciones." } },
-      { id: "anxoves", price: 15.5, pair: ["pa-tomaquet"],
+      { id: "anxoves", origin: "Cantàbric", price: 15.5, pair: ["pa-tomaquet"],
         name: { ca: "Anxoves del Cantàbric", es: "Anchoas del Cantábrico" },
         desc: { ca: "6 unitats.", es: "6 unidades." } },
-      { id: "pernil", price: 19.5,
+      { id: "pernil", origin: "D.O. Jabugo", price: 19.5,
         name: { ca: "Pernil ibèric de gla D.O. Jabugo", es: "Jamón ibérico de bellota D.O. Jabugo" },
         desc: { ca: "100 g, amb «picos».", es: "100 g, con «picos»." } },
       { id: "croquetes", price: 2.9, unit: { ca: "unitat", es: "unidad" }, qtyHint: true,
@@ -128,7 +131,7 @@ window.MENU = [
       { id: "calamarcets", price: 16, pair: ["pa-tomaquet"],
         name: { ca: "Calamarcets saltats", es: "Chipirones salteados" },
         desc: { ca: "Amb botifarra negra, ceba confitada i allioli de pebrot.", es: "Con butifarra negra, cebolla confitada y alioli de pimiento." } },
-      { id: "tartar-tonyina", price: 19,
+      { id: "tartar-tonyina", origin: "Tonyina Balfegó · Ceba de Figueres", price: 19,
         name: { ca: "Tàrtar de tonyina de Balfegó", es: "Tartar de atún de Balfegó" },
         desc: { ca: "Amb alvocat, ceba de Figueres, tomàquet i coriandre.", es: "Con aguacate, cebolla de Figueres, tomate y cilantro." } },
       { id: "carxofes-confitades", price: 17, pair: ["pa-tomaquet"],
@@ -152,7 +155,7 @@ window.MENU = [
       { id: "filet", price: 22.5, sides: true,
         name: { ca: "Filet de vaca filetejat", es: "Solomillo de vaca fileteado" },
         desc: { ca: "Amb escalopa de foie i demiglace de Mòdena. 200 g.", es: "Con escalopa de foie y demiglace de Módena. 200 g." } },
-      { id: "entrecot", price: 21, sides: true,
+      { id: "entrecot", origin: "Vaca madurada", price: 21, sides: true,
         name: { ca: "Entrecot de vaca madurada a la brasa", es: "Entrecot de vaca madurada a la brasa" },
         desc: { ca: "300 g.", es: "300 g." } },
       { id: "confit-anec", price: 18.5,
@@ -169,7 +172,7 @@ window.MENU = [
     kicker: { ca: "Del mar", es: "Del mar" },
     intro: { ca: "Peix amb el punt just i guarnicions que l'acompanyen sense tapar-lo.", es: "Pescado en su punto justo y guarniciones que lo acompañan sin taparlo." },
     dishes: [
-      { id: "bacalla", price: 23.5,
+      { id: "bacalla", origin: "Sobrassada de Mallorca", price: 23.5,
         name: { ca: "Tronc de bacallà", es: "Lomo de bacalao" },
         desc: { ca: "Amb sobrassada de Mallorca i mussolina d'allioli amb mel.", es: "Con sobrasada de Mallorca y muselina de alioli con miel." } },
       { id: "salmo", price: 18,
@@ -193,7 +196,7 @@ window.MENU = [
       { id: "mar-muntanya", price: 21, tags: ["min2"], perPerson: true,
         name: { ca: "Arròs mar i muntanya", es: "Arroz mar y montaña" },
         desc: { ca: "Amb sèpia, bacallà esqueixat, papada de porc confitada i ceps.", es: "Con sepia, bacalao desmigado, papada de cerdo confitada y ceps." } },
-      { id: "muntanya", price: 23, tags: ["min2"], perPerson: true,
+      { id: "muntanya", origin: "Botifarra de Calaf", price: 23, tags: ["min2"], perPerson: true,
         name: { ca: "Arròs de muntanya", es: "Arroz de montaña" },
         desc: { ca: "Amb costella de porc, ceps i botifarra blanca i negra de Calaf.", es: "Con costilla de cerdo, ceps y butifarra blanca y negra de Calaf." } },
       { id: "fideua", price: 19, tags: ["min2"], perPerson: true,
@@ -320,7 +323,13 @@ window.UI = {
     demoMedia: "Vídeo d'exemple",
     viewAll: "Veure tota la carta",
     next: "Següent",
-    of: "de"
+    of: "de",
+    allergens: "Al·lèrgens",
+    allergenAsk: "Consulta'ls al nostre equip",
+    product: "Producte",
+    pricesNote: "Preus en euros.",
+    backToMenu: "Tornar a la carta",
+    weRecommend: "Recomanem acompanyar-ho amb"
   },
   es: {
     lang: "Castellano",
@@ -371,7 +380,48 @@ window.UI = {
     demoMedia: "Vídeo de ejemplo",
     viewAll: "Ver toda la carta",
     next: "Siguiente",
-    of: "de"
+    of: "de",
+    allergens: "Alérgenos",
+    allergenAsk: "Consúltalos a nuestro equipo",
+    product: "Producto",
+    pricesNote: "Precios en euros.",
+    backToMenu: "Volver a la carta",
+    weRecommend: "Recomendamos acompañarlo con"
+  },
+  en: {
+    lang: "English",
+    tapToSkip: "Tap to continue",
+    videoMenu: "The menu in motion",
+    videoMenuSub: "Swipe to discover every dish",
+    whatFancy: "What do you fancy?",
+    dishes: "dishes",
+    dish: "dish",
+    signature: "House classic",
+    share: "To share",
+    min2: "Min. 2 people",
+    perPerson: "per person",
+    sides: "Choice of side",
+    pairWine: "With a dessert wine?",
+    close: "Close",
+    back: "Back",
+    swipe: "Swipe",
+    openToday: "Open today",
+    closedToday: "Closed today",
+    openNow: "Open now",
+    origin: "7vuit7",
+    originTitle: "Local Catalan cuisine, since summer 2019.",
+    originText: "Just off the centre of Matadepera, caring for every detail and the quality of the produce. Salads and tapas to share, charcoal-grilled meats and rice dishes. And in the middle of the dining room, the fireplace.",
+    book: "Book a table",
+    call: "Call",
+    allergenNote: "If you have any food allergy or intolerance, please tell our team: we will inform you of the allergens in each dish.",
+    demoMedia: "Sample video",
+    viewAll: "See the full menu",
+    allergens: "Allergens",
+    allergenAsk: "Please ask our team",
+    product: "Produce",
+    pricesNote: "Prices in euros.",
+    backToMenu: "Back to the menu",
+    weRecommend: "We recommend it with"
   }
 };
 

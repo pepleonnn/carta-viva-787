@@ -435,3 +435,37 @@ body.feed-open .fab .fab__count{min-width:34px;height:34px}
 body.feed-open .fab:not(.is-visible){display:none}
 
 .hero__title{font-size:clamp(46px,12.5vw,84px)}
+
+/* ---------- v4: carta de restaurant (sense comandes), 3 idiomes, menys animació ---------- */
+.lang button{width:38px}
+.lang__pill{width:38px;transform:translateX(calc(var(--i, 0) * 38px))}
+.lang[data-lang="es"] .lang__pill{transform:translateX(calc(var(--i, 1) * 38px))}
+
+/* fila de plat sense botó */
+.dish__side{justify-content:flex-start}
+.dish__price{font-size:21px;letter-spacing:.01em}
+.origin{grid-column:2;display:flex;gap:8px;align-items:baseline;margin-top:6px;font-family:var(--serif);font-style:italic;font-size:16px;color:var(--gold)}
+.origin span{font-family:var(--mono);font-style:normal;font-size:9.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--mute)}
+.block--compact .origin{grid-column:1}
+
+/* fitxa del plat al feed */
+.slide__head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin:8px 0 8px}
+.slide__head .slide__name{margin:0;flex:1;min-width:0}
+.slide__head .slide__price{font-size:28px;padding-top:4px;text-align:right;white-space:nowrap}
+.slide__card .origin{margin-top:10px}
+.slide__card .slide__tags{margin-top:12px}
+.allerg{display:flex;gap:8px;align-items:flex-start;margin-top:12px;font-size:12.5px;color:var(--mute);line-height:1.4}
+.allerg svg{flex:none;width:14px;height:14px;margin-top:1px;stroke:var(--gold);fill:none;stroke-width:1.6}
+.allerg b{font-weight:600;color:var(--ink-2)}
+.slide__extra{margin-top:12px}
+.wine span{white-space:nowrap}
+
+/* menys animació decorativa: entrades suaus, sense zoom continu */
+.kb,.kb.v2,.kb.v3,.kb.v4{animation:none!important}
+.reveal{transform:translateY(10px);transition:opacity .8s var(--ease), transform .8s var(--ease)}
+.dish.is-live .dish__thumb{transform:none}
+.hero__logo .glow{animation:none;opacity:.6}
+.intro__ink{animation-duration:1.2s;animation-delay:.3s}
+.intro__tag{animation-delay:1.2s}
+.intro__skip,.intro__line{display:none}
+.slide__card{transition:transform .6s var(--ease-out), opacity .5s var(--ease)}

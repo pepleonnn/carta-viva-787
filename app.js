@@ -17,7 +17,6 @@
 
   /* ---------- state ---------- */
   let lang = store.get("lang", "ca"); // la carta sempre arrenca en català
-  let list = store.get("list", {});
 
   /* ---------- index ---------- */
   const DISHES = [];
@@ -30,10 +29,8 @@
   /* ---------- helpers ---------- */
   const t = k => (UI[lang] && UI[lang][k]) || UI.ca[k] || k;
   const L = o => (o && (o[lang] ?? o.ca)) || "";
-  const money = n => {
-    const dec = Math.round(n * 100) % 100 === 0 ? 0 : (Math.round(n * 100) % 10 === 0 ? 1 : 2);
-    return n.toLocaleString(lang === "es" ? "es-ES" : "ca-ES", { minimumFractionDigits: dec, maximumFractionDigits: dec }) + " €";
-  };
+  // format de restaurant: 9,50 (sense símbol; la nota del peu indica que són euros)
+  const money = n => n.toLocaleString(lang === "en" ? "en-GB" : lang === "es" ? "es-ES" : "ca-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const pad = n => String(n).padStart(2, "0");
   const shortName = s => s.replace(/^(Les|Els|Las|Los|La|El)\s/i, "");
@@ -125,71 +122,19 @@
     if (!open) open = y.some(([, b]) => toMin(b) > 1440 && mins < toMin(b) - 1440);
     return { slots, open, label: slots.map(([a, b]) => `${fmtH(a)}–${fmtH(b)}`).join(" · ") };
   }
-  const DAYS = { ca: ["Diumenge", "Dilluns", "Dimarts", "Dimecres", "Dijous", "Divendres", "Dissabte"], es: ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"] };
+  const DAYS = { ca: ["Diumenge", "Dilluns", "Dimarts", "Dimecres", "Dijous", "Divendres", "Dissabte"], es: ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"], en: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"] };
+  const SINCE = { ca: "des de", es: "desde", en: "since" };
 
   /* ---------- i18n static ---------- */
   function applyStatic() {
     document.documentElement.lang = lang;
     $$("[data-i18n]").forEach(el => { const k = el.dataset.i18n; el.textContent = k === "claim" ? L(R.claim).join(" ") : t(k); });
     $(".lang").dataset.lang = lang;
+    $(".lang").style.setProperty("--i", ["ca", "es", "en"].indexOf(lang));
     $$(".lang button").forEach(b => b.classList.toggle("is-on", b.dataset.lang === lang));
   }
 
-  /* ---------- selection ---------- */
-  const qty = id => list[id] || 0;
-  function setQty(id, q) { if (q <= 0) delete list[id]; else list[id] = q; store.set("list", list); syncList(); }
-  function toggle(id) {
-    const on = qty(id) > 0; setQty(id, on ? 0 : 1);
-    if (!on) { toast(`${t("added")} · ${L(byId[id].name)}`); try { navigator.vibrate && navigator.vibrate(12); } catch {} }
-  }
-  function syncList() {
-    const count = Object.values(list).reduce((a, b) => a + b, 0);
-    const fab = $("#fab"), old = +$("#fabCount").textContent;
-    $("#fabCount").textContent = count;
-    fab.classList.toggle("is-visible", count > 0);
-    if (count !== old) { fab.classList.remove("bump"); void fab.offsetWidth; fab.classList.add("bump"); }
-    $$("[data-add]").forEach(b => {
-      const q = qty(b.dataset.add); b.classList.toggle("is-on", q > 0);
-      const lab = b.querySelector(".lab"); if (lab) lab.textContent = q > 0 ? t("added") : t("add");
-      const qe = b.querySelector(".qty"); if (qe) { qe.textContent = q; qe.classList.toggle("show", q > 1); }
-    });
-    if ($("#sheet").classList.contains("is-open")) renderSheet();
-  }
-  function renderSheet() {
-    const ids = Object.keys(list).filter(id => byId[id]);
-    const body = $("#sheetBody");
-    if (!ids.length) {
-      body.innerHTML = `<div class="sheet__empty"><img src="assets/img/mark-d.png" alt=""><p>${esc(t("myListEmpty"))}</p></div>`;
-      $("#sheetFoot").style.display = "none"; return;
-    }
-    $("#sheetFoot").style.display = "";
-    let total = 0;
-    body.innerHTML = ids.map(id => {
-      const d = byId[id], q = qty(id), sub = d.price * q; total += sub;
-      return `<div class="line">
-        <div class="line__name">${esc(L(d.name))}</div>
-        <div class="line__price">${money(sub)}</div>
-        <div class="stepper">
-          <button data-step="-1" data-id="${id}" aria-label="−">${ICON.minus}</button>
-          <span>${q}</span>
-          <button data-step="1" data-id="${id}" aria-label="+">${ICON.plus}</button>
-          ${d.perPerson ? `<em>× ${esc(t("perPerson"))}</em>` : d.unit ? `<em>${esc(L(d.unit))}</em>` : ""}
-        </div>
-      </div>`;
-    }).join("");
-    $("#sheetTotal").textContent = money(total);
-  }
-  function openSheet() { renderSheet(); $("#sheet").classList.add("is-open"); $("#scrim").classList.add("is-on"); $("#sheet").setAttribute("aria-hidden", "false"); }
-  function closeSheet() { $("#sheet").classList.remove("is-open"); $("#scrim").classList.remove("is-on"); $("#sheet").setAttribute("aria-hidden", "true"); }
-  function openWaiter() {
-    $("#waiterList").innerHTML = Object.keys(list).filter(id => byId[id]).map(id => `<li><b>${qty(id)}×</b><span>${esc(byId[id].name[lang])}</span></li>`).join("");
-    $("#waiter").classList.add("is-open");
-  }
-  let toastT;
-  function toast(msg) { const el = $("#toast"); el.textContent = msg; el.classList.add("is-on"); clearTimeout(toastT); toastT = setTimeout(() => el.classList.remove("is-on"), 1600); }
-
   /* ---------- markup pieces ---------- */
-  const addBtn = id => `<button class="addbtn" data-add="${id}" aria-label="${esc(t("add"))}">${ICON.plus}<span class="qty"></span></button>`;
   function tagsHTML(d) {
     const out = [];
     (d.tags || []).forEach(tg => {
@@ -198,9 +143,12 @@
       if (tg === "min2") out.push(`<span class="tag">${esc(t("min2"))}</span>`);
     });
     if (d.sides) out.push(`<span class="tag">${esc(t("sides"))}</span>`);
-    (d.allergens || []).forEach(a => window.ALLERGENS[a] && out.push(`<span class="tag">${esc(L(window.ALLERGENS[a]))}</span>`));
     return out.join("");
   }
+  // Al·lèrgens: si el plat en té informats, es llisten; si no, s'indica on consultar-los (RD 126/2015).
+  const allergensHTML = d => `<div class="allerg">${ICON.info}<span><b>${esc(t("allergens"))}</b> · ${
+    d.allergens && d.allergens.length ? d.allergens.map(a => esc(L(window.ALLERGENS[a] || { ca: a }))).join(", ") : esc(t("allergenAsk"))}</span></div>`;
+  const originHTML = d => d.origin ? `<div class="origin"><span>${esc(t("product"))}</span>${esc(d.origin)}</div>` : "";
   const priceSub = d => d.unit ? `/ ${esc(L(d.unit))}` : d.perPerson ? esc(t("perPerson")) : "";
   const demoBadge = d => d.media && d.media.demo ? `<span class="demo-badge">${esc(t("demoMedia"))}</span>` : "";
 
@@ -215,7 +163,7 @@
           <span class="glow"></span>
           <img src="assets/img/logo-dark.png" alt="7vuit7 · 787matadepera">
         </div>
-        <div class="kicker hero__kicker">Matadepera · ${lang === "es" ? "desde" : "des de"} ${R.since}</div>
+        <div class="kicker hero__kicker">Matadepera · ${SINCE[lang]} ${R.since}</div>
         <h1 class="hero__title">${L(R.claim).map(w => `<span><i>${esc(w)}</i></span>`).join("<br>")}</h1>
         <span class="status"><span class="dot ${td.slots.length ? (td.open ? "" : "soon") : "off"}"></span>${esc(td.slots.length ? (td.open ? t("openNow") : t("openToday")) : t("closedToday"))}${td.slots.length ? " · " + td.label : ""}</span>
         <div class="hero__ctas">
@@ -267,8 +215,9 @@
               <li class="dish reveal" data-open-feed="${d.gi}" ${hasMedia(d) ? `data-video-dish="${d.id}"` : ""}>
                 ${c.compact ? "" : `<div class="dish__thumb"><div class="media">${thumbImg(d, 0)}</div>${hasMedia(d) ? `<span class="pi">${ICON.play}</span>` : ""}</div>`}
                 <div class="dish__name">${esc(L(d.name))}</div>
-                <div class="dish__side"><div class="dish__price">${money(d.price)}${priceSub(d) ? `<small>${priceSub(d)}</small>` : ""}</div>${addBtn(d.id)}</div>
+                <div class="dish__side"><div class="dish__price">${money(d.price)}${priceSub(d) ? `<small>${priceSub(d)}</small>` : ""}</div></div>
                 ${L(d.desc) ? `<p class="dish__desc">${esc(L(d.desc))}</p>` : ""}
+                ${originHTML(d)}
                 ${tagsHTML(d) ? `<div class="tags">${tagsHTML(d)}</div>` : ""}
               </li>`).join("")}
           </ul>
@@ -301,12 +250,13 @@
           ${[1, 2, 3, 4, 5, 6, 0].map(d => `<div class="${d === now.getDay() ? "is-today" : ""}"><span>${DAYS[lang][d]}</span><span>${(table[d] || []).length ? table[d].map(([a, b]) => `${fmtH(a)}–${fmtH(b)}`).join(" · ") : "—"}</span></div>`).join("")}
         </div>
         <p class="allergen reveal">${esc(t("allergenNote"))}</p>
-        <p class="credits">787matadepera · ${lang === "es" ? "desde" : "des de"} ${R.since}</p>
+        <p class="allergen">${esc(t("pricesNote"))}</p>
+        <p class="credits">787matadepera · ${SINCE[lang]} ${R.since}</p>
       </div>
     </footer>`;
 
     $("#view").innerHTML = hero + index + chipnav + blocks + about + foot;
-    observeReveals(); observeBlocks(); observeInline(); syncList();
+    observeReveals(); observeBlocks(); observeInline();
   }
 
   /* Vídeos dins la pàgina: la portada, i el plat que queda al centre de la pantalla
@@ -356,13 +306,12 @@
   /* ---------- FEED ---------- */
   let feedBuilt = false, feedIO, activeIdx = -1;
   function slideHTML(d, i) {
-    const words = L(d.name).split(" ").map((w, k) => `<span class="w"><span style="transition-delay:${200 + k * 60}ms">${esc(w)}</span></span>`).join(" ");
     let extra = "";
     if (d.pair && d.pair.length) {
-      extra = d.pair.map(pid => { const p = byId[pid]; return p ? `<div class="pair"><div class="pair__txt"><div class="pair__lbl">${esc(t("pairWith"))}</div><div class="pair__name">${esc(L(p.name))}</div></div><span class="pair__price">${money(p.price)}</span>${addBtn(p.id)}</div>` : ""; }).join("");
+      extra = d.pair.map(pid => { const p = byId[pid]; return p ? `<div class="pair"><div class="pair__txt"><div class="pair__lbl">${esc(t("weRecommend"))}</div><div class="pair__name">${esc(L(p.name))}</div></div><span class="pair__price">${money(p.price)}</span></div>` : ""; }).join("");
     } else if (d.pairGroup) {
       const g = MENU.find(c => c.id === d.pairGroup);
-      extra = `<div class="pair__lbl">${esc(t("pairWine"))}</div><div class="wines">${g.dishes.map(w => `<div class="wine"><div><b>${esc(L(w.name))}</b><span>${money(w.price)}</span></div>${addBtn(w.id)}</div>`).join("")}</div>`;
+      extra = `<div class="pair__lbl">${esc(t("pairWine"))}</div><div class="wines">${g.dishes.map(w => `<div class="wine"><div><b>${esc(L(w.name))}</b><span>${esc(L(w.desc))} · ${money(w.price)}</span></div></div>`).join("")}</div>`;
     } else if (d.sides) {
       extra = `<div class="pair"><div class="pair__txt"><div class="pair__lbl">${esc(t("sides"))}</div><div class="pair__name" style="white-space:normal;font-size:16px">${esc(L(d.cat.note).replace(/^[^:]+:\s*/, ""))}</div></div></div>`;
     } else if (d.perPerson && d.cat.note) {
@@ -375,13 +324,15 @@
       ${demoBadge(d)}
       <div class="slide__card">
         <div class="slide__k">${esc(L(d.cat.name))}</div>
-        <h2 class="slide__name">${words}</h2>
-        ${L(d.desc) ? `<p class="slide__desc">${esc(L(d.desc))}</p>` : ""}
-        <div class="slide__row">
+        <div class="slide__head">
+          <h2 class="slide__name">${esc(L(d.name))}</h2>
           <div class="slide__price">${money(d.price)}${priceSub(d) ? `<small>${priceSub(d)}</small>` : ""}</div>
-          <button class="slide__add" data-add="${d.id}">${ICON.plus}<span class="lab">${esc(t("add"))}</span></button>
         </div>
-        <div class="slide__extra">${tags ? `<div class="slide__tags">${tags}</div>` : ""}${extra}</div>
+        ${L(d.desc) ? `<p class="slide__desc">${esc(L(d.desc))}</p>` : ""}
+        ${originHTML(d)}
+        ${tags ? `<div class="slide__tags">${tags}</div>` : ""}
+        ${allergensHTML(d)}
+        ${extra ? `<div class="slide__extra">${extra}</div>` : ""}
       </div>
     </article>`;
   }
@@ -393,7 +344,7 @@
           <img class="foot__logo" src="assets/img/logo-dark.png" alt="">
           <p>${esc(L(R.claim).join(" "))}</p>
           <div class="btns">
-            <button class="btn btn--ink" data-open-sheet>${esc(t("myList"))}</button>
+            <button class="btn btn--ink" data-close-feed>${esc(t("backToMenu"))}</button>
             <a class="btn btn--line" href="tel:+34${R.phone}">${esc(t("book"))}</a>
           </div>
         </div>
@@ -402,7 +353,7 @@
     feedIO && feedIO.disconnect();
     feedIO = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) setActive(+e.target.dataset.i); }), { root: sc, threshold: .6 });
     $$(".slide", sc).forEach(s => feedIO.observe(s));
-    feedBuilt = true; syncList();
+    feedBuilt = true;
   }
   function setActive(i) {
     if (i === activeIdx) return;
@@ -458,13 +409,11 @@
     if (ss.get("intro") || reduced) { el.remove(); return; }
     const out = () => { if (!el.isConnected) return; el.classList.add("is-out"); ss.set("intro", "1"); setTimeout(() => el.remove(), 1100); };
     el.addEventListener("click", out);
-    setTimeout(out, 3300);
+    setTimeout(out, 2200);
   }
 
   /* ---------- events ---------- */
   document.addEventListener("click", e => {
-    const add = e.target.closest("[data-add]");
-    if (add) { e.stopPropagation(); e.preventDefault(); toggle(add.dataset.add); return; }
     const of = e.target.closest("[data-open-feed]");
     if (of) { openFeed(+of.dataset.openFeed); return; }
     const sc = e.target.closest("[data-scroll]");
@@ -472,31 +421,17 @@
     if (e.target.closest("[data-close-feed]")) { closeFeed(); return; }
     const fc = e.target.closest("[data-feed-cat]");
     if (fc) { const first = DISHES.find(d => d.cat.id === fc.dataset.feedCat); const s = $("#feedScroller"); s.scrollTo({ top: first.gi * s.clientHeight, behavior: "smooth" }); return; }
-    if (e.target.closest("[data-open-sheet]")) { openSheet(); return; }
-    const st = e.target.closest("[data-step]");
-    if (st) { setQty(st.dataset.id, qty(st.dataset.id) + +st.dataset.step); return; }
     const lb = e.target.closest("button[data-lang]");
     if (lb) { setLang(lb.dataset.lang); return; }
   });
-  $("#fab").addEventListener("click", openSheet);
-  $("#scrim").addEventListener("click", closeSheet);
-  $("#clearList").addEventListener("click", () => { list = {}; store.set("list", list); syncList(); renderSheet(); });
-  $("#openWaiter").addEventListener("click", () => { closeSheet(); openWaiter(); });
-  $("#closeWaiter").addEventListener("click", () => $("#waiter").classList.remove("is-open"));
   addEventListener("scroll", onScroll, { passive: true });
   addEventListener("popstate", () => { if (!location.hash.startsWith("#v-")) closeFeed(true); });
   addEventListener("keydown", e => {
-    if (e.key === "Escape") { closeSheet(); closeFeed(); $("#waiter").classList.remove("is-open"); }
+    if (e.key === "Escape") closeFeed();
     if ($("#feed").classList.contains("is-open") && (e.key === "ArrowDown" || e.key === "ArrowUp")) {
       e.preventDefault(); const s = $("#feedScroller"); s.scrollBy({ top: (e.key === "ArrowDown" ? 1 : -1) * s.clientHeight, behavior: "smooth" });
     }
   });
-  (() => { let y0 = null; const sh = $("#sheet");
-    sh.addEventListener("touchstart", e => { if ($("#sheetBody").scrollTop <= 0) y0 = e.touches[0].clientY; }, { passive: true });
-    sh.addEventListener("touchmove", e => { if (y0 == null) return; const dy = e.touches[0].clientY - y0; if (dy > 0) sh.style.transform = `translateY(${dy}px)`; }, { passive: true });
-    sh.addEventListener("touchend", e => { if (y0 == null) return; const dy = e.changedTouches[0].clientY - y0; sh.style.transform = ""; y0 = null; if (dy > 90) closeSheet(); });
-  })();
-
   function setLang(l) {
     if (l === lang) return;
     lang = l; store.set("lang", l); applyStatic();

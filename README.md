@@ -3,7 +3,7 @@
 Carta digital en moviment del restaurant **7vuit7 · 787matadepera** (C/ Sant Llorenç, 91, Matadepera).
 El client escaneja el QR de la taula i entra a una carta que es llisca com un vídeo: plat a plat, amb preu, descripció i suggeriments per acompanyar-lo.
 
-Català i castellà · pensada per a mòbil · sense dependències ni servidor.
+Català, castellà i anglès · pensada per a mòbil · sense dependències ni servidor.
 
 ## Què hi ha
 
@@ -53,3 +53,8 @@ La carta original no inclou al·lèrgens. El camp `allergens` ja està preparat 
 ## Publicar amb GitHub Pages
 
 Settings → Pages → Branch `main`, carpeta `/ (root)`. La URL resultant és la que va al QR.
+
+## Al·lèrgens
+
+Cada plat mostra la línia "Al·lèrgens". Mentre el restaurant no els passi, hi diu "Consulta'ls al nostre equip".
+Per omplir-los: `data/alergens-plantilla.csv` (una fila per plat, marcar amb una X els que conté) i passar-los a `allergens: [...]` a `data/menu.js`.

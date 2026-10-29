@@ -11,6 +11,12 @@
   <meta name="apple-mobile-web-app-title" content="7vuit7">
   <meta property="og:title" content="7vuit7 · La carta">
   <meta property="og:description" content="Cuina catalana de proximitat · 787matadepera">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://pepleonnn.github.io/carta-viva-787/">
+  <meta property="og:image" content="https://pepleonnn.github.io/carta-viva-787/assets/img/og.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
   <link rel="icon" href="assets/img/icon-512.png">
   <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
   <link rel="manifest" href="manifest.webmanifest">
@@ -43,19 +49,13 @@
       <div class="lang" role="group" aria-label="Idioma">
         <button data-lang="ca">CA</button>
         <button data-lang="es">ES</button>
+        <button data-lang="en">EN</button>
         <span class="lang__pill"></span>
       </div>
     </div>
   </header>
 
   <main id="view" class="view"></main>
-
-  <!-- Floating selection button -->
-  <button class="fab" id="fab" aria-label="La meva tria">
-    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 7h12l-1 12.5a1.5 1.5 0 0 1-1.5 1.5h-7A1.5 1.5 0 0 1 7 19.5L6 7Z"/><path d="M9 7V5.5a3 3 0 0 1 6 0V7"/></svg>
-    <span class="fab__label" data-i18n="myList"></span>
-    <span class="fab__count" id="fabCount">0</span>
-  </button>
 
   <!-- Video feed -->
   <section id="feed" class="feed" aria-hidden="true">
@@ -74,35 +74,8 @@
     </div>
   </section>
 
-  <!-- Bottom sheet: my selection -->
-  <div class="scrim" id="scrim"></div>
-  <section class="sheet" id="sheet" aria-hidden="true">
-    <div class="sheet__grab"></div>
-    <header class="sheet__head">
-      <h3 data-i18n="myList"></h3>
-      <button class="textbtn" id="clearList" data-i18n="clear"></button>
-    </header>
-    <div class="sheet__body" id="sheetBody"></div>
-    <footer class="sheet__foot" id="sheetFoot">
-      <div class="sheet__total"><span data-i18n="total"></span><strong id="sheetTotal"></strong></div>
-      <button class="btn btn--gold" id="openWaiter" data-i18n="showWaiter"></button>
-    </footer>
-  </section>
-
-  <!-- Waiter mode -->
-  <section class="waiter" id="waiter" aria-hidden="true">
-    <button class="iconbtn waiter__close" id="closeWaiter" aria-label="Tancar">
-      <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg>
-    </button>
-    <img class="waiter__mark" src="assets/img/mark-d.png" alt="">
-    <h2 data-i18n="waiterHello"></h2>
-    <p class="waiter__hint" data-i18n="waiterHint"></p>
-    <ol class="waiter__list" id="waiterList"></ol>
-  </section>
-
-  <div class="toast" id="toast"></div>
-
   <script src="data/menu.js"></script>
+  <script src="data/menu-en.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

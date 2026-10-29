@@ -6,12 +6,12 @@
   const $ = (s, el = document) => el.querySelector(s);
   const $$ = (s, el = document) => [...el.querySelectorAll(s)];
   const store = {
-    get(k, d) { try { const v = localStorage.getItem("787:" + k); return v ? JSON.parse(v) : d; } catch { return d; } },
-    set(k, v) { try { localStorage.setItem("787:" + k, JSON.stringify(v)); } catch {} }
+    get(k, d) { try { const v = localStorage.getItem("787:" + k); return v ? JSON.parse(v) : d; } catch (_) { return d; } },
+    set(k, v) { try { localStorage.setItem("787:" + k, JSON.stringify(v)); } catch (_) {} }
   };
   const ss = {
-    get(k) { try { return sessionStorage.getItem("787:" + k); } catch { return null; } },
-    set(k, v) { try { sessionStorage.setItem("787:" + k, v); } catch {} }
+    get(k) { try { return sessionStorage.getItem("787:" + k); } catch (_) { return null; } },
+    set(k, v) { try { sessionStorage.setItem("787:" + k, v); } catch (_) {} }
   };
   const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -28,7 +28,7 @@
 
   /* ---------- helpers ---------- */
   const t = k => (UI[lang] && UI[lang][k]) || UI.ca[k] || k;
-  const L = o => (o && (o[lang] ?? o.ca)) || "";
+  const L = o => (o && (o[lang] != null ? o[lang] : o.ca)) || "";
   // format de restaurant: 9,50 (sense símbol; la nota del peu indica que són euros)
   const money = n => n.toLocaleString(lang === "en" ? "en-GB" : lang === "es" ? "es-ES" : "ca-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -76,22 +76,23 @@
     const id = ids[0];
     f.className = "yt" + (horizontal ? " is-h" : "");
     f.allow = "autoplay; encrypted-media; picture-in-picture";
+    f.referrerPolicy = "strict-origin-when-cross-origin"; // YouTube exigeix el referer (error 153 si falta)
     f.setAttribute("tabindex", "-1");
     f.setAttribute("aria-hidden", "true");
     f.dataset.ids = ids.join(",");
     f.src = `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&mute=1&controls=0&loop=1&playlist=${id}&playsinline=1&rel=0&modestbranding=1&iv_load_policy=3&disablekb=1&fs=0&enablejsapi=1&origin=${encodeURIComponent(location.origin)}`;
     f.addEventListener("load", () => {
       players.set(f.contentWindow, f);
-      const ping = () => { try { f.contentWindow.postMessage(JSON.stringify({ event: "listening", id: id }), "*"); } catch {} };
+      const ping = () => { try { f.contentWindow.postMessage(JSON.stringify({ event: "listening", id: id }), "*"); } catch (_) {} };
       ping(); setTimeout(ping, 600); setTimeout(ping, 1500);
     });
     return f;
   }
-  function ytCmd(f, func) { try { f.contentWindow.postMessage(JSON.stringify({ event: "command", func, args: [] }), "*"); } catch {} }
+  function ytCmd(f, func) { try { f.contentWindow.postMessage(JSON.stringify({ event: "command", func, args: [] }), "*"); } catch (_) {} }
   addEventListener("message", e => {
     if (!/youtube(-nocookie)?\.com$/.test(new URL(e.origin || "http://x").hostname)) return;
     const f = players.get(e.source); if (!f) return;
-    let data; try { data = typeof e.data === "string" ? JSON.parse(e.data) : e.data; } catch { return; }
+    let data; try { data = typeof e.data === "string" ? JSON.parse(e.data) : e.data; } catch (_) { return; }
     const st = data && (data.event === "onStateChange" ? data.info : data.info && data.info.playerState);
     if (st === 1) f.classList.add("is-on");
     if (data && data.event === "onError") {
@@ -402,7 +403,7 @@
     $$("#feedScroller .media").forEach(unmountVideo);
     $$(".media iframe", $("#view")).forEach(fr => ytCmd(fr, "playVideo"));
     const d = DISHES[activeIdx]; activeIdx = -1;
-    if (d) { const row = $(`.dish[data-open-feed="${d.gi}"]`); row && row.scrollIntoView({ block: "center" }); }
+    if (d) { const row = $(`.dish[data-open-feed="${d.gi}"]`); if (row) { const r = row.getBoundingClientRect(); document.documentElement.style.scrollBehavior = "auto"; window.scrollTo(0, Math.max(0, r.top + window.pageYOffset - innerHeight / 2 + r.height / 2)); document.documentElement.style.scrollBehavior = ""; } }
     if (!fromPop && location.hash.startsWith("#v-")) history.back();
   }
 
@@ -415,12 +416,24 @@
     setTimeout(out, 2200);
   }
 
+  /* ---------- navegació dins la pàgina ----------
+     Desplaçament suau amb garantia: si el navegador no l'acaba (pestanyes en segon pla,
+     navegadors integrats com el de WhatsApp), salta directament a la secció. */
+  function goTo(id) {
+    const tg = document.getElementById(id); if (!tg) return;
+    const bar = $("#topbar"), nav = $("#chipnav");
+    const offset = (bar ? bar.offsetHeight : 0) + (nav && id !== "carta" && id !== "top" ? nav.offsetHeight : 0) + 8;
+    const top = Math.max(0, tg.getBoundingClientRect().top + window.pageYOffset - offset);
+    try { window.scrollTo({ top, behavior: reduced ? "auto" : "smooth" }); } catch (_) { window.scrollTo(0, top); }
+    setTimeout(() => { if (Math.abs(window.pageYOffset - top) > 40) { document.documentElement.style.scrollBehavior = "auto"; window.scrollTo(0, top); document.documentElement.style.scrollBehavior = ""; } }, 900);
+  }
+
   /* ---------- events ---------- */
   document.addEventListener("click", e => {
     const of = e.target.closest("[data-open-feed]");
     if (of) { openFeed(+of.dataset.openFeed); return; }
     const sc = e.target.closest("[data-scroll]");
-    if (sc) { e.preventDefault(); const tg = document.getElementById(sc.dataset.scroll); tg && tg.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "start" }); return; }
+    if (sc) { e.preventDefault(); goTo(sc.dataset.scroll); return; }
     if (e.target.closest("[data-close-feed]")) { closeFeed(); return; }
     const fc = e.target.closest("[data-feed-cat]");
     if (fc) { const first = DISHES.find(d => d.cat.id === fc.dataset.feedCat); const s = $("#feedScroller"); s.scrollTo({ top: first.gi * s.clientHeight, behavior: "smooth" }); return; }
@@ -445,7 +458,7 @@
   }
 
   /* ---------- boot ---------- */
-  try { history.scrollRestoration = "manual"; } catch {}
+  try { history.scrollRestoration = "manual"; } catch (_) {}
   applyStatic();
   intro();
   renderHome();

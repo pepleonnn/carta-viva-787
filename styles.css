@@ -109,7 +109,7 @@ p{margin:0}
 
 /* ---------------- Media (vídeo YouTube / foto en moviment) ---------------- */
 .media{position:absolute;inset:0;overflow:hidden;background:var(--sand);container-type:size}
-.media img.thumb{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;will-change:transform}
+.media img.thumb{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .media .yt{position:absolute;top:50%;left:50%;border:0;pointer-events:none;
   width:max(100cqw, 56.25cqh);height:max(100cqh, 177.78cqw);
   transform:translate(-50%,-50%) scale(1.18);opacity:0;transition:opacity .9s var(--ease)}

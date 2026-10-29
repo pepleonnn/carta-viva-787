@@ -307,7 +307,7 @@
   }
 
   /* ---------- FEED ---------- */
-  let feedBuilt = false, feedIO, activeIdx = -1;
+  let feedBuilt = false, feedIO, activeIdx = -1, mountT;
   function slideHTML(d, i) {
     let extra = "";
     if (d.pair && d.pair.length) {
@@ -324,7 +324,7 @@
     }
     const tags = tagsHTML(d);
     return `<article class="slide" data-i="${i}" data-cat="${d.cat.id}">
-      <div class="media">${thumbImg(d, (i % 4) + 1, true)}</div>
+      <div class="media" data-kb="${(i % 4) + 1}"></div>
       <div class="slide__shade"></div>
       <div class="slide__card">
         <div class="slide__k">${esc(L(d.cat.name))}</div>
@@ -367,12 +367,18 @@
       const k = +s.dataset.i, on = k === i, media = s.querySelector(".media");
       s.classList.toggle("is-active", on);
       if (!media) return;
-      // keep a player only on the active slide and its neighbours
-      if (Math.abs(k - i) <= 1 && DISHES[k]) mountVideo(media, DISHES[k]); else unmountVideo(media);
-      const f = media.querySelector("iframe"), v = media.querySelector("video");
-      if (f) ytCmd(f, on ? "playVideo" : "pauseVideo");
-      if (v) on ? v.play().catch(() => {}) : v.pause();
+      // memòria (iPhone): imatge només a prop del plat actiu, i un sol vídeo alhora
+      const near = Math.abs(k - i) <= 1 && DISHES[k];
+      const img = media.querySelector("img");
+      if (near && !img) media.insertAdjacentHTML("afterbegin", thumbImg(DISHES[k], on ? +media.dataset.kb : 0, true));
+      else if (!near && img) img.remove();
+      if (!on) unmountVideo(media);
     });
+    clearTimeout(mountT);
+    mountT = setTimeout(() => {
+      const s = $(`#feedScroller .slide[data-i="${i}"]`), media = s && s.querySelector(".media");
+      if (media && i === activeIdx && DISHES[i]) mountVideo(media, DISHES[i]);
+    }, 280);
     const d = DISHES[i];
     $("#feedCount").textContent = d ? `${i + 1}/${DISHES.length}` : "";
     const prog = $("#feedProg");
@@ -389,7 +395,8 @@
     if (!feedBuilt) buildFeed();
     const f = $("#feed"); f.classList.add("is-open"); f.setAttribute("aria-hidden", "false");
     document.body.classList.add("lock", "feed-open");
-    $$(".media iframe", $("#view")).forEach(fr => ytCmd(fr, "pauseVideo"));
+    inlineIO && inlineIO.disconnect(); rowIO && rowIO.disconnect();
+    $$(".media", $("#view")).forEach(unmountVideo);
     const sc = $("#feedScroller"); activeIdx = -1;
     requestAnimationFrame(() => { sc.scrollTop = i * sc.clientHeight; setActive(i); });
     $("#feedHint").classList.toggle("is-gone", i > 0 || !!ss.get("hint"));
@@ -400,10 +407,11 @@
     const f = $("#feed"); if (!f.classList.contains("is-open")) return;
     f.classList.remove("is-open"); f.setAttribute("aria-hidden", "true");
     document.body.classList.remove("lock", "feed-open");
-    $$("#feedScroller .media").forEach(unmountVideo);
-    $$(".media iframe", $("#view")).forEach(fr => ytCmd(fr, "playVideo"));
+    clearTimeout(mountT);
+    $$("#feedScroller .media").forEach(m => { unmountVideo(m); const im = m.querySelector("img"); if (im) im.remove(); });
     const d = DISHES[activeIdx]; activeIdx = -1;
     if (d) { const row = $(`.dish[data-open-feed="${d.gi}"]`); if (row) { const r = row.getBoundingClientRect(); document.documentElement.style.scrollBehavior = "auto"; window.scrollTo(0, Math.max(0, r.top + window.pageYOffset - innerHeight / 2 + r.height / 2)); document.documentElement.style.scrollBehavior = ""; } }
+    setTimeout(observeInline, 60);
     if (!fromPop && location.hash.startsWith("#v-")) history.back();
   }
 
